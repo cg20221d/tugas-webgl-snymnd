@@ -71,30 +71,30 @@ const main = () =>{
 
     // form 1
     const vertices1 = [
-        //vertices form number 7
-        -0.4, 0.9, 
-        -0.3, 0.9,
+        //vertices form number 1
+        -0.3, 0.9, 
+        -0.2, 0.9,
         
+        -0.2, 0.58,
+        -0.15, 0.58,
+        
+        -0.15, 0.5,
+        -0.35, 0.5,
+
+        -0.35, 0.58,
         -0.3, 0.58,
-        -0.25, 0.58,
-        
-        -0.25, 0.5,
-        -0.45, 0.5,
 
-        -0.45, 0.58,
-        -0.4, 0.58,
+        -0.3, 0.8,
+        -0.35, 0.8,
 
-        -0.4, 0.8,
-        -0.45, 0.8,
-
-        -0.45, 0.85,
+        -0.35, 0.85,
     ];
     drawing(vertices1, 0, 11); 
     
     
     // form u
     const verticesU = [
-        //vertices form number 7
+        //vertices form number U
         -0.9, 0.4, //a
         -0.8, 0.3, //b
         -0.9, 0.0, //c
@@ -112,7 +112,7 @@ const main = () =>{
     
     // form S
     const verticesS = [
-        //vertices form number 7
+        //vertices form number S
         -0.1, 0.4, //a
         -0.0, 0.3, //b
         -0.3, 0.4, //c
