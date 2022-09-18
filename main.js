@@ -95,17 +95,17 @@ const main = () =>{
     // form u
     const verticesU = [
         //vertices form number 7
-        -0.8, 0.4, //a
-        -0.7, 0.4, //b
-        -0.8, 0.1, //c
+        -0.9, 0.4, //a
+        -0.8, 0.3, //b
+        -0.9, 0.0, //c
 
-        -0.7, 0.1, //bcd
-        -0.7, 0.0, //cde
-        -0.6, 0.1, //def
+        -0.8, 0.0, //bcd
+        -0.8, -0.1, //cde
+        -0.6, 0.0, //def
 
-        -0.6, 0.0, //efg
-        -0.5, 0.1, //fgh
-        -0.6, 0.4, //ghi
+        -0.6, -0.1, //efg
+        -0.5, 0.0, //fgh
+        -0.6, 0.3, //ghi
         -0.5, 0.4, //hij
     ];
     drawing(verticesU, 0, 10, gl.TRIANGLE_STRIP); 
@@ -113,7 +113,7 @@ const main = () =>{
     // form S
     const verticesS = [
         //vertices form number 7
-        -0.0, 0.4, //a
+        -0.1, 0.4, //a
         -0.0, 0.3, //b
         -0.3, 0.4, //c
 
@@ -133,7 +133,7 @@ const main = () =>{
         -0.1, -0.1, //lmn
         -0.4, 0.0, //mno
         
-        -0.4, -0.1, //mno
+        -0.3, -0.1, //mno
     ];
     drawing(verticesS, 0, 16, gl.TRIANGLE_STRIP); 
 }
