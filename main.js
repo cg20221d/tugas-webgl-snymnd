@@ -3,9 +3,15 @@ const main = () =>{
     const gl = canvas.getContext('webgl');
 
     const vertices = [
-        0.5, 0.5,
-        0.0, 0.0,
-        -0.5, 0.5,
+        //vertices form number 7
+        -0.9, 0.9, 
+        -0.55, 0.9,
+
+        -0.8, 0.5,
+        -0.9, 0.5,
+
+        -0.7, 0.82,
+        -0.9, 0.82,
     ];
     
     const buffer = gl.createBuffer();
@@ -57,5 +63,5 @@ const main = () =>{
     gl.clearColor(0.0, 1.0, 1.0, 1.0); //(R G B A)
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    gl.drawArrays(gl.POINTS, 0, 3);
+    gl.drawArrays(gl.LINE_LOOP, 0, 6);
 }
