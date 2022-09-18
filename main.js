@@ -45,29 +45,29 @@ const main = () =>{
     
     
     // drawing function
-    const drawing = (vertices, start=0, end) =>{        
+    const drawing = (vertices, start=0, end, glType=gl.LINE_LOOP) =>{        
         // bind buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
         gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(aPosition);
-        gl.drawArrays(gl.LINE_LOOP, start, end);
+        gl.drawArrays(glType, start, end);
     }
     
 
     //f form 7
     const vertices7 = [
         //vertices form number 7
-        -0.9, 0.9, 
-        -0.55, 0.9,
-
+        -0.8, 0.9, 
+        -0.5, 0.9,
+        -0.5, 0.82, 
+        -0.7, 0.5,
         -0.8, 0.5,
-        -0.9, 0.5,
 
-        -0.7, 0.82,
-        -0.9, 0.82,
+        -0.6, 0.82,
+        -0.8, 0.82,
     ];
-    drawing(vertices7, 0, 6); 
+    drawing(vertices7, 0, 7); 
 
     // form 1
     const vertices1 = [
@@ -90,4 +90,23 @@ const main = () =>{
         -0.45, 0.85,
     ];
     drawing(vertices1, 0, 11); 
+    
+    
+    // form u
+    const verticesU = [
+        //vertices form number 7
+        -0.8, 0.4, //a
+        -0.7, 0.4, //b
+        -0.8, 0.1, //c
+
+        -0.7, 0.1, //bcd
+        -0.7, 0.0, //cde
+        -0.6, 0.1, //def
+
+        -0.6, 0.0, //efg
+        -0.5, 0.1, //fgh
+        -0.6, 0.4, //ghi
+        -0.5, 0.4, //hik
+    ];
+    drawing(verticesU, 0, 10, gl.TRIANGLE_STRIP); 
 }
