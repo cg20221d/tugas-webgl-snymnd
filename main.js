@@ -106,7 +106,34 @@ const main = () =>{
         -0.6, 0.0, //efg
         -0.5, 0.1, //fgh
         -0.6, 0.4, //ghi
-        -0.5, 0.4, //hik
+        -0.5, 0.4, //hij
     ];
     drawing(verticesU, 0, 10, gl.TRIANGLE_STRIP); 
+    
+    // form S
+    const verticesS = [
+        //vertices form number 7
+        -0.0, 0.4, //a
+        -0.0, 0.3, //b
+        -0.3, 0.4, //c
+
+        -0.3, 0.3, //bcd
+        -0.4, 0.3, //cde
+        -0.3, 0.2, //eff
+        
+        -0.4, 0.2, //deg
+        -0.3, 0.1, //fgh
+        -0.1, 0.2, //ghi
+        
+        -0.1, 0.1, //hij
+        -0.0, 0.1, //ijk
+        -0.1, 0.0, //jkl
+        
+        -0.0, 0.0, //klm
+        -0.1, -0.1, //lmn
+        -0.4, 0.0, //mno
+        
+        -0.4, -0.1, //mno
+    ];
+    drawing(verticesS, 0, 16, gl.TRIANGLE_STRIP); 
 }
