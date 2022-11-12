@@ -3,18 +3,22 @@ const main = () =>{
     const gl = canvas.getContext('webgl');
     
     const buffer = gl.createBuffer();
+    const indexBuffer = gl.createBuffer();
 
     // vertex shader
     const vertexShaderCode = 
     `
-    attribute vec2 aPosition;
+    attribute vec3 aPosition;
     attribute vec3 aColor;
-    varying vec3 vColor;
     uniform mat4 uModel;
+    uniform mat4 uView;
+    uniform mat4 uProjection;
+    varying vec3 vColor;
     void main() {
-        vec2 position = aPosition;
-        gl_PointSize = 50.0;
-        gl_Position = uModel * vec4(position, 0.0, 1.0);
+
+        // gl_PointSize = 50.0;
+        gl_Position = uProjection * uView * uModel * vec4(aPosition, 1.0);
+        vColor = aColor;
     }`
     const vertexShaderObject = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShaderObject, vertexShaderCode);
@@ -25,10 +29,7 @@ const main = () =>{
     precision mediump float;
     varying vec3 vColor;
     void main(){
-        float r = 1.0;
-        float g = 0.0;
-        float b = 1.0;
-        gl_FragColor = vec4(r, g, b, 1.0);
+        gl_FragColor = vec4(vColor, 1.0);
     }`
     const fragmenShaaderObject = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fragmenShaaderObject, fragmenShaderCode);
@@ -48,35 +49,58 @@ const main = () =>{
     var verticalSpeed = 0.0;
     var horizontalDelta = 0.0;
     var verticalDelta = 0.0;
+
     
-        
-    gl.clearColor(0.0, 1.0, 1.0, 1.0); //(R G B A)
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-
     // variable pointer ke GLSL
     var uModel = gl.getUniformLocation(shaderProgram, "uModel");
+    // View
+    var cameraX = 0.0;
+    var cameraZ = 3.0;
+    var uView = gl.getUniformLocation(shaderProgram, "uView");
+    var view = glMatrix.mat4.create();
+    glMatrix.mat4.lookAt(
+        view,
+        [cameraX, 0.0, cameraZ],    // the location of the eye or the camera
+        [cameraX, 0.0, -10],        // the point where the camera look at
+        [0.0, 1.0, 0.0]
+    );
+    // Projection
+    var uProjection = gl.getUniformLocation(shaderProgram, "uProjection");
+    var perspective = glMatrix.mat4.create();
+    glMatrix.mat4.perspective(perspective, Math.PI/3, 1.0, 0.5, 10.0);
+
+
+
+
     // bind attribute : told gpu how to collect position value from buffer to  every vertex that processing 
     const aPosition = gl.getAttribLocation(shaderProgram, 'aPosition');
     const aColor = gl.getAttribLocation(shaderProgram, 'aColor');
         
     
     // drawing function
-    const drawing = (vertices, start=0, end, glType=gl.LINE_LOOP) =>{        
+    const drawing = (vertices, indices, start=0, end, glType=gl.LINE_LOOP) =>{        
         // bind buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-        gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 
-            0 * Float32Array.BYTES_PER_ELEMENT, 
+        
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+        
+        gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 
+            6 * Float32Array.BYTES_PER_ELEMENT, 
             0 * Float32Array.BYTES_PER_ELEMENT
         );
         gl.enableVertexAttribArray(aPosition);
-        gl.drawArrays(glType, start, end);
-        // gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 
-        //     0 * Float32Array.BYTES_PER_ELEMENT, 
-        //     0 * Float32Array.BYTES_PER_ELEMENT 
-        // );
-        // gl.enableVertexAttribArray(aColor);
+        
+        // gl.drawArrays(glType, start, end);
+        
+        gl.vertexAttribPointer(aColor, 2, gl.FLOAT, false, 
+            0 * Float32Array.BYTES_PER_ELEMENT, 
+            0 * Float32Array.BYTES_PER_ELEMENT 
+            );
+        gl.enableVertexAttribArray(aColor);
+        
+        gl.drawElements(glType,indices.length, gl.UNSIGNED_SHORT, 0);
     }
     const render = () => {    
         gl.clearColor(0.0, 1.0, 1.0, 1.0); //(R G B A)
@@ -95,8 +119,10 @@ const main = () =>{
         ) 
         glMatrix.mat4.translate(model, model, [horizontalDelta, verticalDelta, 0.0]);
         gl.uniformMatrix4fv(uModel,false, model);
+        gl.uniformMatrix4fv(uView, false, view);
+        gl.uniformMatrix4fv(uProjection, false, perspective);
         objects.map((object) => {
-            drawing(object.vertices, 0, object.length, object.type);
+            drawing(object.vertices, object.indices, 0, object.length, object.type);
         });
         // gl.drawArrays(gltype, start, end);
         requestAnimationFrame(render);
@@ -121,22 +147,74 @@ const main = () =>{
     // form 1
     const vertices1 = [
         //vertices form number 1
-        -0.3, 0.9, 
-        -0.2, 0.9,
+        -0.3, 0.9,   0.0,  0, 0, 0,
+
+        -0.2, 0.9,   0.0,  0, 0, 0,
+        -0.2, 0.9,   0.1,  0, 0, 0,
+        -0.2, 0.9,   0.0,  0, 0, 0,
+
+        -0.2, 0.58,  0.0,  0, 0, 0,
+        -0.2, 0.58,  0.1,  0, 0, 0,
+        -0.2, 0.58,  0.0,  0, 0, 0,
+
+        -0.15, 0.58, 0.0,  0, 0, 0,
+        -0.15, 0.58, 0.1,  0, 0, 0,
+        -0.15, 0.58, 0.0,  0, 0, 0,
+
+        -0.15, 0.5,  0.0,  0, 0, 0,
+        -0.15, 0.5,  0.1,  0, 0, 0,
+        -0.15, 0.5,  0.0,  0, 0, 0,
         
-        -0.2, 0.58,
-        -0.15, 0.58,
+        -0.35, 0.5,  0.0,  0, 0, 0,
+        -0.35, 0.5,  0.1,  0, 0, 0,
+        -0.35, 0.5,  0.0,  0, 0, 0,
+
+        -0.35, 0.58, 0.0,  0, 0, 0,
+        -0.35, 0.58, 0.1,  0, 0, 0,
+        -0.35, 0.58, 0.0,  0, 0, 0,
+
+        -0.3, 0.58,  0.0,  0, 0, 0,
+        -0.3, 0.58,  0.1,  0, 0, 0,
+        -0.3, 0.58,  0.0,  0, 0, 0,
+
+        -0.3, 0.8,   0.0,  0, 0, 0,
+        -0.3, 0.8,   0.1,  0, 0, 0,
+        -0.3, 0.8,   0.0,  0, 0, 0,
+
+        -0.35, 0.8,  0.0,  0, 0, 0,
+        -0.35, 0.8,  0.1,  0, 0, 0,
+        -0.35, 0.8,  0.0,  0, 0, 0,
+
+        -0.35, 0.85, 0.0,  0, 0, 0,
+        -0.35, 0.85, 0.1,  0, 0, 0,
+        -0.35, 0.85, 0.0,  0, 0, 0,
+
+        -0.3, 0.9,   0.0,  0, 0, 0,  // transition
+        -0.3, 0.9,   0.1,  0, 0, 0,  // transition
+        -0.2, 0.9,   0.1,  0, 0, 0,
         
-        -0.15, 0.5,
-        -0.35, 0.5,
+        -0.2, 0.58,  0.1,  0, 0, 0,
+        -0.15, 0.58, 0.1,  0, 0, 0,
         
-        -0.35, 0.58,
-        -0.3, 0.58,
+        -0.15, 0.5,  0.1,  0, 0, 0,
+        -0.35, 0.5,  0.1,  0, 0, 0,
         
-        -0.3, 0.8,
-        -0.35, 0.8,
+        -0.35, 0.58, 0.1,  0, 0, 0,
+        -0.3, 0.58,  0.1,  0, 0, 0,
         
-        -0.35, 0.85,
+        -0.3, 0.8,   0.1,  0, 0, 0,
+        -0.35, 0.8,  0.1,  0, 0, 0,
+
+        -0.35, 0.85, 0.1,  0, 0, 0,
+        
+        -0.3, 0.9,   0.1,  0, 0, 0,  // transition
+    ];
+    var indices1 = [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+        11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 
+        22, 23, 24, 25, 26, 26, 27, 28, 28, 29, 30, 
+        30, 31, 32, 32, 33, 34, 34, 35, 36, 36, 37, 
+        38, 38, 39, 40, 41, 42, 43
     ];
     // drawing(vertices1, 0, 11); 
     
@@ -187,26 +265,27 @@ const main = () =>{
     // drawing(verticesS, 0, 16, gl.TRIANGLE_STRIP); 
 
     const objects = [
-        {
-            vertices: vertices7,
-            length: 7,
-            type: gl.LINE_LOOP,
-        },
+        // {
+        //     vertices: vertices7,
+        //     length: 7,
+        //     type: gl.LINE_LOOP,
+        // },
         {
             vertices: vertices1,
+            indices : indices1,
             length: 11,
-            type: gl.LINE_LOOP,
+            type: gl.LINE_LOOP
         },
-        {
-            vertices: verticesU,
-            length: 10,
-            type: gl.TRIANGLE_STRIP,
-        },
-        {
-            vertices: verticesS,
-            length: 16,
-            type: gl.TRIANGLE_STRIP,
-        },
+        // {
+        //     vertices: verticesU,
+        //     length: 10,
+        //     type: gl.TRIANGLE_STRIP,
+        // },
+        // {
+        //     vertices: verticesS,
+        //     length: 16,
+        //     type: gl.TRIANGLE_STRIP,
+        // },
     ]
     console.log(objects);
 
