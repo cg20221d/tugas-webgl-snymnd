@@ -42,10 +42,10 @@ const main = () =>{
     gl.linkProgram(shaderProgram);
     gl.useProgram(shaderProgram);
 
-        // varoaible lokal
+    // varoaible lokal
     var theta = 0.0;
     var freeze = false;
-    var horizontalSpeed = 0.0;
+    var horizontalSpeed = 0.171; //nrp
     var verticalSpeed = 0.0;
     var horizontalDelta = 0.0;
     var verticalDelta = 0.0;
@@ -55,19 +55,19 @@ const main = () =>{
     var uModel = gl.getUniformLocation(shaderProgram, "uModel");
     // View
     var cameraX = 0.0;
-    var cameraZ = 3.0;
+    var cameraZ = 7.5;
     var uView = gl.getUniformLocation(shaderProgram, "uView");
     var view = glMatrix.mat4.create();
     glMatrix.mat4.lookAt(
         view,
         [cameraX, 0.0, cameraZ],    // the location of the eye or the camera
-        [cameraX, 0.0, -10],        // the point where the camera look at
+        [cameraX, 0.0, 0],        // the point where the camera look at
         [0.0, 1.0, 0.0]
     );
     // Projection
     var uProjection = gl.getUniformLocation(shaderProgram, "uProjection");
     var perspective = glMatrix.mat4.create();
-    glMatrix.mat4.perspective(perspective, Math.PI/3, 1.0, 0.5, 10.0);
+    glMatrix.mat4.perspective(perspective, Math.PI/2.4, 1.0, 0.5, 50.0);
 
 
 
@@ -94,30 +94,39 @@ const main = () =>{
         
         // gl.drawArrays(glType, start, end);
         
-        gl.vertexAttribPointer(aColor, 2, gl.FLOAT, false, 
-            0 * Float32Array.BYTES_PER_ELEMENT, 
-            0 * Float32Array.BYTES_PER_ELEMENT 
+        gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 
+            6 * Float32Array.BYTES_PER_ELEMENT, 
+            3 * Float32Array.BYTES_PER_ELEMENT 
             );
         gl.enableVertexAttribArray(aColor);
         
         gl.drawElements(glType,indices.length, gl.UNSIGNED_SHORT, 0);
     }
-    const render = () => {    
+
+    const frameWidth = 12.4 //in mat4 unit
+    const render = (object) => {    
         gl.clearColor(0.0, 1.0, 1.0, 1.0); //(R G B A)
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         if (!freeze) {
             theta += 0.1;
         }
-        horizontalDelta += horizontalSpeed;
         verticalDelta -= verticalSpeed;
         var model = glMatrix.mat4.create();
-        glMatrix.mat4.rotateY(
-            model,
-            model,
-            theta * Math.PI / 10
-        ) 
+        // glMatrix.mat4.rotateY(
+            //     model,
+            //     model,
+            //     [1]
+            //     // theta * Math.PI / 100
+            // ) 
+        // bounching
+        if (horizontalDelta >= (frameWidth/2) || horizontalDelta <= (-frameWidth/2+1)) {
+            horizontalSpeed = horizontalSpeed * -1;
+        } 
+        horizontalDelta += horizontalSpeed;
         glMatrix.mat4.translate(model, model, [horizontalDelta, verticalDelta, 0.0]);
+            
+            
         gl.uniformMatrix4fv(uModel,false, model);
         gl.uniformMatrix4fv(uView, false, view);
         gl.uniformMatrix4fv(uProjection, false, perspective);
@@ -133,81 +142,115 @@ const main = () =>{
     //f form 7
     const vertices7 = [
         //vertices form number 7
-        -0.8, 0.9, 
-        -0.5, 0.9,
-        -0.5, 0.82, 
-        -0.7, 0.5,
-        -0.8, 0.5,
+        -0.8, 0.9,  0.0,     1, 0, 0, 
+
+        -0.5, 0.9,  0.0,     1, 0, 0,
+        -0.5, 0.9,  0.1,     1, 1, 0,
+        -0.5, 0.9,  0.0,     1, 0, 0,
+
+        -0.5, 0.82, 0.0,     1, 0, 0,
+        -0.5, 0.82, 0.1,     1, 1, 0,
+        -0.5, 0.82, 0.0,     1, 0, 0,
         
-        -0.6, 0.82,
-        -0.8, 0.82,
+        -0.7, 0.5,  0.0,     1, 0, 0,
+        -0.7, 0.5,  0.1,     1, 1, 0,
+        -0.7, 0.5,  0.0,     1, 0, 0,
+
+        -0.8, 0.5,  0.0,     1, 0, 0,
+        -0.8, 0.5,  0.1,     1, 1, 0,
+        -0.8, 0.5,  0.0,     1, 0, 0,
+
+        -0.6, 0.82, 0.0,     1, 0, 0, 
+        -0.6, 0.82, 0.1,     1, 1, 0, 
+        -0.6, 0.82, 0.0,     1, 0, 0, 
+
+        -0.8, 0.82, 0.0,     1, 0, 0, 
+        -0.8, 0.82, 0.1,     1, 1, 0, 
+        -0.8, 0.82, 0.0,     1, 0, 0,
+        
+        -0.8, 0.9,  0.0,     1, 0, 0, // transisi
+        -0.8, 0.9,  0.1,     0, 0, 1, 
+
+        -0.5, 0.9,  0.1,     0, 0, 1,
+        -0.5, 0.82, 0.1,     0, 0, 1,
+        -0.7, 0.5,  0.1,     0, 0, 1,
+        -0.8, 0.5,  0.1,     0, 0, 1,
+        -0.6, 0.82, 0.1,     0, 0, 1,
+        -0.8, 0.82, 0.1,     0, 0, 1,
+        
+        -0.8, 0.82,  0.1,     0, 0, 1,
+        -0.8, 0.9,  0.1,     1, , 1,
+    ];
+    const indices7 = [
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 
+        10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 
+        20, 21, 22, 23, 24, 25, 27, 28
     ];
     // drawing(vertices7, 0, 7); 
     
     // form 1
     const vertices1 = [
-        //vertices form number 1
-        -0.3, 0.9,   0.0,  0, 0, 0,
+        -0.3, 0.9,   0.0,  1, 1, 0,
 
-        -0.2, 0.9,   0.0,  0, 0, 0,
-        -0.2, 0.9,   0.1,  0, 0, 0,
-        -0.2, 0.9,   0.0,  0, 0, 0,
+        -0.2, 0.9,   0.0,  0, 0, 1,
+        -0.2, 0.9,   0.1,  0, 0, 1,
+        -0.2, 0.9,   0.0,  0, 0, 1,
 
-        -0.2, 0.58,  0.0,  0, 0, 0,
-        -0.2, 0.58,  0.1,  0, 0, 0,
-        -0.2, 0.58,  0.0,  0, 0, 0,
+        -0.2, 0.58,  0.0,  0, 0, 1,
+        -0.2, 0.58,  0.1,  0, 0, 1,
+        -0.2, 0.58,  0.0,  0, 0, 1,
 
-        -0.15, 0.58, 0.0,  0, 0, 0,
-        -0.15, 0.58, 0.1,  0, 0, 0,
-        -0.15, 0.58, 0.0,  0, 0, 0,
+        -0.15, 0.58, 0.0,  0, 0, 1,
+        -0.15, 0.58, 0.1,  0, 0, 1,
+        -0.15, 0.58, 0.0,  0, 0, 1,
 
-        -0.15, 0.5,  0.0,  0, 0, 0,
-        -0.15, 0.5,  0.1,  0, 0, 0,
-        -0.15, 0.5,  0.0,  0, 0, 0,
+        -0.15, 0.5,  0.0,  0, 0, 1,
+        -0.15, 0.5,  0.1,  0, 0, 1,
+        -0.15, 0.5,  0.0,  0, 0, 1,
         
-        -0.35, 0.5,  0.0,  0, 0, 0,
-        -0.35, 0.5,  0.1,  0, 0, 0,
-        -0.35, 0.5,  0.0,  0, 0, 0,
+        -0.35, 0.5,  0.0,  0, 0, 1,
+        -0.35, 0.5,  0.1,  0, 0, 1,
+        -0.35, 0.5,  0.0,  0, 0, 1,
 
-        -0.35, 0.58, 0.0,  0, 0, 0,
-        -0.35, 0.58, 0.1,  0, 0, 0,
-        -0.35, 0.58, 0.0,  0, 0, 0,
+        -0.35, 0.58, 0.0,  0, 0, 1,
+        -0.35, 0.58, 0.1,  0, 0, 1,
+        -0.35, 0.58, 0.0,  0, 0, 1,
 
-        -0.3, 0.58,  0.0,  0, 0, 0,
-        -0.3, 0.58,  0.1,  0, 0, 0,
-        -0.3, 0.58,  0.0,  0, 0, 0,
+        -0.3, 0.58,  0.0,  0, 0, 1,
+        -0.3, 0.58,  0.1,  0, 0, 1,
+        -0.3, 0.58,  0.0,  0, 0, 1,
 
-        -0.3, 0.8,   0.0,  0, 0, 0,
-        -0.3, 0.8,   0.1,  0, 0, 0,
-        -0.3, 0.8,   0.0,  0, 0, 0,
+        -0.3, 0.8,   0.0,  0, 0, 1,
+        -0.3, 0.8,   0.1,  0, 0, 1,
+        -0.3, 0.8,   0.0,  0, 0, 1,
 
-        -0.35, 0.8,  0.0,  0, 0, 0,
-        -0.35, 0.8,  0.1,  0, 0, 0,
-        -0.35, 0.8,  0.0,  0, 0, 0,
+        -0.35, 0.8,  0.0,  0, 0, 1,
+        -0.35, 0.8,  0.1,  0, 0, 1,
+        -0.35, 0.8,  0.0,  0, 0, 1,
 
-        -0.35, 0.85, 0.0,  0, 0, 0,
-        -0.35, 0.85, 0.1,  0, 0, 0,
-        -0.35, 0.85, 0.0,  0, 0, 0,
+        -0.35, 0.85, 0.0,  0, 0, 1,
+        -0.35, 0.85, 0.1,  0, 0, 1,
+        -0.35, 0.85, 0.0,  0, 0, 1,
 
-        -0.3, 0.9,   0.0,  0, 0, 0,  // transition
-        -0.3, 0.9,   0.1,  0, 0, 0,  // transition
-        -0.2, 0.9,   0.1,  0, 0, 0,
+        -0.3, 0.9,   0.0,  0, 0, 1,  // transition
+        -0.3, 0.9,   0.1,  1, 0, 0,  // transition
+        -0.2, 0.9,   0.1,  1, 0, 0,
         
-        -0.2, 0.58,  0.1,  0, 0, 0,
-        -0.15, 0.58, 0.1,  0, 0, 0,
+        -0.2, 0.58,  0.1,  1, 0, 0,
+        -0.15, 0.58, 0.1,  1, 0, 0,
         
-        -0.15, 0.5,  0.1,  0, 0, 0,
-        -0.35, 0.5,  0.1,  0, 0, 0,
+        -0.15, 0.5,  0.1,  1, 0, 0,
+        -0.35, 0.5,  0.1,  1, 0, 0,
         
-        -0.35, 0.58, 0.1,  0, 0, 0,
-        -0.3, 0.58,  0.1,  0, 0, 0,
+        -0.35, 0.58, 0.1,  1, 0, 0,
+        -0.3, 0.58,  0.1,  1, 0, 0,
         
-        -0.3, 0.8,   0.1,  0, 0, 0,
-        -0.35, 0.8,  0.1,  0, 0, 0,
+        -0.3, 0.8,   0.1,  1, 0, 0,
+        -0.35, 0.8,  0.1,  1, 0, 0,
 
-        -0.35, 0.85, 0.1,  0, 0, 0,
+        -0.35, 0.85, 0.1,  1, 0, 0,
         
-        -0.3, 0.9,   0.1,  0, 0, 0,  // transition
+        -0.3, 0.9,   0.1,  1, 0, 0,  // transition
     ];
     var indices1 = [
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -265,12 +308,15 @@ const main = () =>{
     // drawing(verticesS, 0, 16, gl.TRIANGLE_STRIP); 
 
     const objects = [
-        // {
-        //     vertices: vertices7,
-        //     length: 7,
-        //     type: gl.LINE_LOOP,
-        // },
         {
+            name: '7',
+            vertices: vertices7,
+            indices: indices7,
+            length: 7,
+            type: gl.LINE_LOOP,
+        },
+        {
+            name: '1',
             vertices: vertices1,
             indices : indices1,
             length: 11,
