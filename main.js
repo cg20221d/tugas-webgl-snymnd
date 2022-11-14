@@ -2,8 +2,8 @@ const main = () =>{
     const canvas = document.querySelector('#kanvas');
     const gl = canvas.getContext('webgl');
     
-    const buffer = gl.createBuffer();
-    const indexBuffer = gl.createBuffer();
+    // const buffer = gl.createBuffer();
+    // const indexBuffer = gl.createBuffer();
 
     // vertex shader
     const vertexShaderCode = 
@@ -45,19 +45,16 @@ const main = () =>{
     // varoaible lokal
     var theta = 0.0;
     var freeze = false;
-    var horizontalSpeed = 0.171; //nrp
-    var verticalSpeed = 0.0;
-    var horizontalDelta = 0.0;
-    var verticalDelta = 0.0;
+
 
     
     // variable pointer ke GLSL
-    var uModel = gl.getUniformLocation(shaderProgram, "uModel");
+    // var uModel = gl.getUniformLocation(shaderProgram, "uModel");
     // View
     var cameraX = 0.0;
     var cameraZ = 7.5;
-    var uView = gl.getUniformLocation(shaderProgram, "uView");
     var view = glMatrix.mat4.create();
+    // var uView = gl.getUniformLocation(shaderProgram, "uView");
     glMatrix.mat4.lookAt(
         view,
         [cameraX, 0.0, cameraZ],    // the location of the eye or the camera
@@ -65,20 +62,20 @@ const main = () =>{
         [0.0, 1.0, 0.0]
     );
     // Projection
-    var uProjection = gl.getUniformLocation(shaderProgram, "uProjection");
+    // var uProjection = gl.getUniformLocation(shaderProgram, "uProjection");
     var perspective = glMatrix.mat4.create();
     glMatrix.mat4.perspective(perspective, Math.PI/2.4, 1.0, 0.5, 50.0);
 
-
-
-
     // bind attribute : told gpu how to collect position value from buffer to  every vertex that processing 
-    const aPosition = gl.getAttribLocation(shaderProgram, 'aPosition');
-    const aColor = gl.getAttribLocation(shaderProgram, 'aColor');
+    // const aPosition = gl.getAttribLocation(shaderProgram, 'aPosition');
+    // const aColor = gl.getAttribLocation(shaderProgram, 'aColor');
         
     
     // drawing function
-    const drawing = (vertices, indices, start=0, end, glType=gl.LINE_LOOP) =>{        
+    const drawing = (vertices, indices, start=0, end, glType=gl.LINE_LOOP) =>{ 
+        const buffer = gl.createBuffer();
+        const indexBuffer = gl.createBuffer();
+
         // bind buffer
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -86,6 +83,9 @@ const main = () =>{
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
         
+        const aPosition = gl.getAttribLocation(shaderProgram, 'aPosition');
+        const aColor = gl.getAttribLocation(shaderProgram, 'aColor');
+        // variable pointer ke GLSL
         gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 
             6 * Float32Array.BYTES_PER_ELEMENT, 
             0 * Float32Array.BYTES_PER_ELEMENT
@@ -102,42 +102,108 @@ const main = () =>{
         
         gl.drawElements(glType,indices.length, gl.UNSIGNED_SHORT, 0);
     }
-
+    
     const frameWidth = 12.4 //in mat4 unit
-    const render = (object) => {    
-        gl.clearColor(0.0, 1.0, 1.0, 1.0); //(R G B A)
-        gl.clear(gl.COLOR_BUFFER_BIT);
+    var horizontalSpeed = 0.171; //nrp
+    var verticalSpeed = 0.0;
+    var horizontalDelta = 0.0;
+    var verticalDelta = 0.0;
 
-        if (!freeze) {
-            theta += 0.1;
-        }
-        verticalDelta -= verticalSpeed;
+    var scaleDelta = 0.0;
+    var scaleSpeed = 0.01;
+    /// animating object '7'
+    const animate7 = () =>{
         var model = glMatrix.mat4.create();
-        // glMatrix.mat4.rotateY(
-            //     model,
-            //     model,
-            //     [1]
-            //     // theta * Math.PI / 100
-            // ) 
-        // bounching
+
+
+
         if (horizontalDelta >= (frameWidth/2) || horizontalDelta <= (-frameWidth/2+1)) {
             horizontalSpeed = horizontalSpeed * -1;
-        } 
+        }
         horizontalDelta += horizontalSpeed;
         glMatrix.mat4.translate(model, model, [horizontalDelta, verticalDelta, 0.0]);
-            
-            
+        
+        var uModel = gl.getUniformLocation(shaderProgram, "uModel");
+        var uView = gl.getUniformLocation(shaderProgram, "uView");
+        var uProjection = gl.getUniformLocation(shaderProgram, "uProjection"); 
         gl.uniformMatrix4fv(uModel,false, model);
         gl.uniformMatrix4fv(uView, false, view);
         gl.uniformMatrix4fv(uProjection, false, perspective);
-        objects.map((object) => {
-            drawing(object.vertices, object.indices, 0, object.length, object.type);
-        });
-        // gl.drawArrays(gltype, start, end);
+        drawing(objects[0].vertices, objects[0].indices, 0, objects[0].length, objects[0].type);
+    }
+    
+    const animate1 = () =>{
+        var model = glMatrix.mat4.create();
+
+        if (scaleDelta >= 1 || scaleDelta <= -0.5) { //scale 2x lipat (maju 1 unit z), scale 0.5x kalo lipat (mundur 0.5 unit z)
+            scaleSpeed = scaleSpeed * -1;
+        }
+        scaleDelta += scaleSpeed;
+        glMatrix.mat4.translate(model, model, [0, 0, scaleDelta]);
+        
+        var uModel = gl.getUniformLocation(shaderProgram, "uModel");
+        var uView = gl.getUniformLocation(shaderProgram, "uView");
+        var uProjection = gl.getUniformLocation(shaderProgram, "uProjection"); 
+        gl.uniformMatrix4fv(uModel,false, model);
+        gl.uniformMatrix4fv(uView, false, view);
+        gl.uniformMatrix4fv(uProjection, false, perspective);
+        drawing(objects[1].vertices, objects[1].indices, 0, objects[1].length, objects[1].type);
+    }
+    
+    const render = () => {  
+        gl.clearColor(0.0, 1.0, 1.0, 1.0); //(R G B A)
+        // Clear the canvas AND the depth buffer.
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);  
+        
+        
+        // glMatrix.mat4.translate(model, model, [horizontalDelta, verticalDelta, 0.0]);
+        // drawing(objects[0].vertices, objects[0].indices, 0, objects[0].length, objects[0].type);
+        
+        var model = glMatrix.mat4.create();
+        var uModel = gl.getUniformLocation(shaderProgram, "uModel");
+        var uView = gl.getUniformLocation(shaderProgram, "uView");
+        var uProjection = gl.getUniformLocation(shaderProgram, "uProjection"); 
+        gl.uniformMatrix4fv(uModel,false, model);
+        gl.uniformMatrix4fv(uView, false, view);
+        gl.uniformMatrix4fv(uProjection, false, perspective);
+        animate7();
+        animate1();
         requestAnimationFrame(render);
     }
 
     requestAnimationFrame(render);
+    
+    // const render = () => {    
+    //     // gl.clearColor(0.0, 1.0, 1.0, 1.0); //(R G B A)
+    //     // gl.clear(gl.COLOR_BUFFER_BIT);
+    //     // const model = glMatrix.mat4.create();
+
+    //     // if (!freeze) {
+    //     //     theta += 0.1;
+    //     // }
+    //     // verticalDelta -= verticalSpeed;
+    //     // var model = glMatrix.mat4.create();
+    //     // glMatrix.mat4.rotateY(
+    //         //     model,
+    //         //     model,
+    //         //     [1]
+    //         //     // theta * Math.PI / 100
+    //         // ) 
+    //     // animate7();
+    //     const model = glMatrix.mat4.create();
+            
+    //     gl.uniformMatrix4fv(uModel,false, model);
+    //     gl.uniformMatrix4fv(uView, false, view);
+    //     gl.uniformMatrix4fv(uProjection, false, perspective);
+    //     // objects.map((object) => {
+    //     //     drawing(object.vertices, object.indices, 0, object.length, object.type);
+    //     // });
+    //     // gl.drawArrays(gltype, start, end);
+    //     drawing(objects[1].vertices, objects[1].indices, 0, objects[1].length, objects[1].type);
+    //     requestAnimationFrame(render);
+    // }
+
+    // requestAnimationFrame(render);
     
     //f form 7
     const vertices7 = [
