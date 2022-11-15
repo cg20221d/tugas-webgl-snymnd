@@ -41,7 +41,9 @@ const main = () =>{
 
     // varoaible lokal
     var theta = 0.0;
-    var freeze = false;
+    var yDelta = 0.0;
+    var xDelta = 0.0;
+    var scaler = 4.0; //scalasi 4x
 
     // View
     var cameraX = 0.0;
@@ -50,7 +52,7 @@ const main = () =>{
     // var uView = gl.getUniformLocation(shaderProgram, "uView");
     glMatrix.mat4.lookAt(
         view,
-        [cameraX, 3, cameraZ],    // the location of the eye or the camera
+        [cameraX, 0, cameraZ],    // the location of the eye or the camera
         [cameraX, 0.0, 0],        // the point where the camera look at
         [0.0, 1.0, 0.0]
     );
@@ -81,7 +83,7 @@ const main = () =>{
         gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 
             6 * Float32Array.BYTES_PER_ELEMENT, 
             3 * Float32Array.BYTES_PER_ELEMENT 
-            );
+        );
         gl.enableVertexAttribArray(aColor);
         
         gl.drawElements(glType,indices.length, gl.UNSIGNED_SHORT, 0);
@@ -90,20 +92,20 @@ const main = () =>{
     const frameWidth = 12.4 //in mat4 unit
     var horizontalSpeed = 0.171; //nrp
     var horizontalDelta = 0.0;
-    var verticalDelta = 0.0;
-
     var scaleDelta = 0.0;
     var scaleSpeed = 0.01;
-    /// animating object '7'
+
+
     const animate7 = () =>{
         var model = glMatrix.mat4.create();
 
-        if (horizontalDelta >= (frameWidth/2) || horizontalDelta <= (-frameWidth/2+1)) {
+        if (horizontalDelta >= (frameWidth/2+1) || horizontalDelta <= (-frameWidth/2+4)) {
             horizontalSpeed = horizontalSpeed * -1;
         }
         horizontalDelta += horizontalSpeed;
-        glMatrix.mat4.translate(model, model, [horizontalDelta, verticalDelta, 0.0]);
+        glMatrix.mat4.translate(model, model, [horizontalDelta, 0, 0.0]);
         
+        glMatrix.mat4.scale(model, model, [scaler, scaler, scaler]);
         var uModel = gl.getUniformLocation(shaderProgram, "uModel");
         var uView = gl.getUniformLocation(shaderProgram, "uView");
         var uProjection = gl.getUniformLocation(shaderProgram, "uProjection"); 
@@ -121,8 +123,9 @@ const main = () =>{
             scaleSpeed = scaleSpeed * -1;
         }
         scaleDelta += scaleSpeed;
-        glMatrix.mat4.translate(model, model, [0, 0, scaleDelta]);
+        glMatrix.mat4.translate(model, model, [1, -5.5, scaleDelta]);
         
+        glMatrix.mat4.scale(model, model, [scaler, scaler, scaler]);
         var uModel = gl.getUniformLocation(shaderProgram, "uModel");
         var uView = gl.getUniformLocation(shaderProgram, "uView");
         var uProjection = gl.getUniformLocation(shaderProgram, "uProjection"); 
@@ -130,6 +133,37 @@ const main = () =>{
         gl.uniformMatrix4fv(uView, false, view);
         gl.uniformMatrix4fv(uProjection, false, perspective);
         drawing(objects[1].vertices, objects[1].indices, objects[1].type);
+    }
+
+    const animateU = () =>{
+        var model = glMatrix.mat4.create();
+
+        glMatrix.mat4.rotateY(model, model, yDelta, 0);
+        
+        glMatrix.mat4.translate(model, model, [1, -0.5, 0]);
+        glMatrix.mat4.scale(model, model, [scaler, scaler, scaler]);        
+        var uModel = gl.getUniformLocation(shaderProgram, "uModel");
+        var uView = gl.getUniformLocation(shaderProgram, "uView");
+        var uProjection = gl.getUniformLocation(shaderProgram, "uProjection"); 
+        gl.uniformMatrix4fv(uModel,false, model);
+        gl.uniformMatrix4fv(uView, false, view);
+        gl.uniformMatrix4fv(uProjection, false, perspective);
+        drawing(objects[2].vertices, objects[2].indices, objects[2].type);
+    }
+    const animateS = () =>{
+        var model = glMatrix.mat4.create();
+
+        glMatrix.mat4.rotateX(model, model, xDelta);
+        
+        glMatrix.mat4.translate(model, model, [2.5, -0.5, 0])
+        glMatrix.mat4.scale(model, model, [scaler, scaler, scaler]);
+        var uModel = gl.getUniformLocation(shaderProgram, "uModel");
+        var uView = gl.getUniformLocation(shaderProgram, "uView");
+        var uProjection = gl.getUniformLocation(shaderProgram, "uProjection"); 
+        gl.uniformMatrix4fv(uModel,false, model);
+        gl.uniformMatrix4fv(uView, false, view);
+        gl.uniformMatrix4fv(uProjection, false, perspective);
+        drawing(objects[3].vertices, objects[3].indices, objects[3].type);
     }
     
     const render = () => {  
@@ -139,7 +173,7 @@ const main = () =>{
         var model = glMatrix.mat4.create();
 
         theta += 0.01;
-        glMatrix.mat4.rotateY(model, model, theta *.7, [0.0, 1.0, 0.0]);
+        glMatrix.mat4.rotateY(model, model, theta *.7, [1.0, 1.0, 0.0]);
         // glMatrix.mat4.translate(model, model, [0, 0, 0.0]);
         
         var uModel = gl.getUniformLocation(shaderProgram, "uModel");
@@ -148,21 +182,31 @@ const main = () =>{
         gl.uniformMatrix4fv(uModel,false, model);
         gl.uniformMatrix4fv(uView, false, view);
         gl.uniformMatrix4fv(uProjection, false, perspective);
-        drawing(objects[3].vertices, objects[3].indices, objects[3].type);
-        drawing(objects[2].vertices, objects[2].indices, objects[2].type);
-        
-        
-
         
         animate7();
         animate1();
-        
-        
+        animateU();
+        animateS();
         
         requestAnimationFrame(render);
     }
 
     requestAnimationFrame(render);
+
+    // event handler
+    document.addEventListener('keydown', (event) => {
+        const keyName = event.key;
+        if (keyName === 'ArrowUp') {
+            xDelta += 0.1;
+        } else if (keyName === 'ArrowDown') {
+            xDelta -= 0.1;
+        } else if (keyName === 'ArrowLeft') {
+            yDelta -= 0.1;
+        } else if (keyName === 'ArrowRight') {
+            yDelta += 0.1;
+        }
+    });
+
     
     //f form 7
     const vertices7 = [
@@ -284,23 +328,6 @@ const main = () =>{
         30, 31, 32, 32, 33, 34, 34, 35, 36, 36, 37, 
         38, 38, 39, 40, 41, 42, 43
     ];
-    
-    // form u
-    // const verticesU = [
-    //     //vertices form number U
-    //     -0.9, 0.4, //a
-    //     -0.8, 0.3, //b
-    //     -0.9, 0.0, //c
-        
-    //     -0.8, 0.0, //bcd
-    //     -0.8, -0.1, //cde
-    //     -0.6, 0.0, //def
-        
-    //     -0.6, -0.1, //efg
-    //     -0.5, 0.0, //fgh
-    //     -0.6, 0.3, //ghi
-    //     -0.5, 0.4, //hij
-    // ];
     
     // form u
     const verticesU = [
