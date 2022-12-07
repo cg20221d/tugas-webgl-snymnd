@@ -14,7 +14,7 @@ const main = () =>{
     void main() {
 
         // gl_PointSize = 50.0;
-        gl_Position = uProjection * uView * uModel * vec4(aPosition, 1.0);
+        gl_Position =  uProjection * uView *   uModel * vec4(aPosition, 1.0);
         vColor = aColor;
     }`
     const vertexShaderObject = gl.createShader(gl.VERTEX_SHADER);
@@ -25,6 +25,7 @@ const main = () =>{
     const fragmenShaderCode = `
     precision mediump float;
     varying vec3 vColor;
+
     void main(){
         gl_FragColor = vec4(vColor, 1.0);
     }`
@@ -43,6 +44,9 @@ const main = () =>{
     var theta = 0.0;
     var yDelta = 0.0;
     var xDelta = 0.0;
+    var zCubeDelta = 0.0;
+    var xCubeDelta = 0.0;
+
     var scaler = 4.0; //scalasi 4x
 
     // View
@@ -96,6 +100,21 @@ const main = () =>{
     var scaleSpeed = 0.01;
 
 
+    const animateCube = () =>{
+        var model = glMatrix.mat4.create();
+        
+        glMatrix.mat4.translate(model, model, [xCubeDelta, 0, zCubeDelta]);
+
+        glMatrix.mat4.scale(model, model, [-.2, -.2, -.2]);
+        var uModel = gl.getUniformLocation(shaderProgram, "uModel");
+        var uView = gl.getUniformLocation(shaderProgram, "uView");
+        var uProjection = gl.getUniformLocation(shaderProgram, "uProjection"); 
+        gl.uniformMatrix4fv(uModel,false, model);
+        gl.uniformMatrix4fv(uView, false, view);
+        gl.uniformMatrix4fv(uProjection, false, perspective);
+        drawing(objects[4].vertices, objects[4].indices, objects[4].type);
+    }
+
     const animate7 = () =>{
         var model = glMatrix.mat4.create();
 
@@ -103,7 +122,7 @@ const main = () =>{
             horizontalSpeed = horizontalSpeed * -1;
         }
         horizontalDelta += horizontalSpeed;
-        glMatrix.mat4.translate(model, model, [horizontalDelta, 0, 0.0]);
+        glMatrix.mat4.translate(model, model, [horizontalDelta, -6, 0]);
         
         glMatrix.mat4.scale(model, model, [scaler, scaler, scaler]);
         var uModel = gl.getUniformLocation(shaderProgram, "uModel");
@@ -138,9 +157,9 @@ const main = () =>{
     const animateU = () =>{
         var model = glMatrix.mat4.create();
 
-        glMatrix.mat4.rotateY(model, model, yDelta, 0);
+        glMatrix.mat4.rotate(model, model, xDelta, [0, 1, 0]);
         
-        glMatrix.mat4.translate(model, model, [1, -0.5, 0]);
+        glMatrix.mat4.translate(model, model, [2.7, 2, 0]);
         glMatrix.mat4.scale(model, model, [scaler, scaler, scaler]);        
         var uModel = gl.getUniformLocation(shaderProgram, "uModel");
         var uView = gl.getUniformLocation(shaderProgram, "uView");
@@ -153,7 +172,7 @@ const main = () =>{
     const animateS = () =>{
         var model = glMatrix.mat4.create();
 
-        glMatrix.mat4.rotateX(model, model, xDelta);
+        glMatrix.mat4.rotateX(model, model, yDelta);
         
         glMatrix.mat4.translate(model, model, [2.5, -0.5, 0])
         glMatrix.mat4.scale(model, model, [scaler, scaler, scaler]);
@@ -167,13 +186,10 @@ const main = () =>{
     }
     
     const render = () => {  
-        gl.clearColor(0.0, 1.0, 1.0, 1.0); //(R G B A)
+        gl.clearColor(0.0, 0.0, 0.0, 1.0); //(R G B A)
         // Clear the canvas AND the depth buffer.
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);  
         var model = glMatrix.mat4.create();
-
-        theta += 0.01;
-        glMatrix.mat4.rotateY(model, model, theta *.7, [1.0, 1.0, 0.0]);
         // glMatrix.mat4.translate(model, model, [0, 0, 0.0]);
         
         var uModel = gl.getUniformLocation(shaderProgram, "uModel");
@@ -184,9 +200,10 @@ const main = () =>{
         gl.uniformMatrix4fv(uProjection, false, perspective);
         
         animate7();
-        animate1();
         animateU();
-        animateS();
+        animateCube();
+        // animate1(); //disabled
+        // animateS(); //disabled
         
         requestAnimationFrame(render);
     }
@@ -197,17 +214,67 @@ const main = () =>{
     document.addEventListener('keydown', (event) => {
         const keyName = event.key;
         if (keyName === 'ArrowUp') {
-            xDelta += 0.1;
-        } else if (keyName === 'ArrowDown') {
-            xDelta -= 0.1;
-        } else if (keyName === 'ArrowLeft') {
-            yDelta -= 0.1;
-        } else if (keyName === 'ArrowRight') {
             yDelta += 0.1;
+        } else if (keyName === 'ArrowDown') {
+            yDelta -= 0.1;
+        } else if (keyName === 'ArrowLeft') {
+            xDelta -= 0.1;
+        } else if (keyName === 'ArrowRight') {
+            xDelta += 0.1;
+        }
+        else if (keyName ===  'i') {
+            zCubeDelta += 0.1;
+        }
+        else if (keyName === 'k') {
+            zCubeDelta -= 0.1;
+        
+        } else if (keyName === 'j') {
+            xCubeDelta += 0.1;
+        
+        } else if (keyName === 'l') {
+            xCubeDelta -= 0.1;
         }
     });
 
-    
+    // form cube 
+    const verticesCube = [
+        1.0, 1.0, 1.0,      1, 1, 1,
+       -1.0, 1.0, 1.0,      1, 1, 1,
+       -1.0,-1.0, 1.0,      1, 1, 1,
+        1.0,-1.0, 1.0,      1, 1, 1, // v0-v1-v2-v3 front white
+        1.0, 1.0, 1.0,      1, 1, 1,
+        1.0,-1.0, 1.0,      1, 1, 1,
+        1.0,-1.0,-1.0,      1, 1, 1,
+        1.0, 1.0,-1.0,      1, 1, 1, // v0-v3-v4-v5 right(white)
+        1.0, 1.0, 1.0,      1, 1, 1,
+        1.0, 1.0,-1.0,      1, 1, 1,
+       -1.0, 1.0,-1.0,      1, 1, 1,
+       -1.0, 1.0, 1.0,      1, 1, 1,  // v0-v5-v6-v1 up
+       -1.0, 1.0, 1.0,      1, 1, 1,
+       -1.0, 1.0,-1.0,      1, 1, 1,
+       -1.0,-1.0,-1.0,      1, 1, 1,
+       -1.0,-1.0, 1.0,      1, 1, 1,  // v1-v6-v7-v2 left
+       -1.0,-1.0,-1.0,      1, 1, 1,
+        1.0,-1.0,-1.0,      1, 1, 1,
+        1.0,-1.0, 1.0,      1, 1, 1,
+       -1.0,-1.0, 1.0,      1, 1, 1,   // v7-v4-v3-v2 down
+        1.0,-1.0,-1.0,      1, 1, 1,
+       -1.0,-1.0,-1.0,      1, 1, 1,
+       -1.0, 1.0,-1.0,      1, 1, 1,
+        1.0, 1.0,-1.0,      1, 1, 1,   // v4-v7-v6-v5 back
+     ];
+
+     const indicesCube = [
+        0, 1, 2,   0, 2, 3,    
+        4, 5, 6,   4, 6, 7,    
+        8, 9,10,   8,10,11,    
+        12,13,14,  12,14,15,    
+        16,17,18,  16,18,19,    
+        20,21,22,  20,22,23,
+        24,25,26,   24,26,27,     
+        28,29,30,   28,30,31,     
+     ];
+
     //f form 7
     const vertices7 = [
         //vertices form number 7
@@ -419,13 +486,6 @@ const main = () =>{
         -0.9, 0.0, 0.1,     1,0,1,//c
         -0.8, 0.3, 0.1,     1,0,1, //b
         -0.9, 0.4, 0.1,     1,0,1,//a
-    
-     
-        
-
-
-
-
 
     ];
     const indicesU = [
@@ -607,6 +667,13 @@ const main = () =>{
             indices: indicesS,
             length: 16,
             type: gl.TRIANGLE_STRIP,
+        },
+        {
+            name: 'cube',
+            vertices: verticesCube,
+            indices: indicesCube,
+            length: 7,
+            type: gl.TRIANGLES,
         },
     ]
     console.log(objects);
