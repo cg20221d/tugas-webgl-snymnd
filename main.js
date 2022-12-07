@@ -26,8 +26,14 @@ const main = () =>{
     precision mediump float;
     varying vec3 vColor;
 
+    uniform vec3 uAmbientConstant;
+    uniform float uAmbientIntensity;
+
     void main(){
-        gl_FragColor = vec4(vColor, 1.0);
+        vec3 ambient = uAmbientConstant * uAmbientIntensity;
+        vec3 phong = ambient;
+
+        gl_FragColor = vec4(phong * vColor, 1.0);
     }`
     const fragmenShaaderObject = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fragmenShaaderObject, fragmenShaderCode);
@@ -112,6 +118,13 @@ const main = () =>{
         gl.uniformMatrix4fv(uModel,false, model);
         gl.uniformMatrix4fv(uView, false, view);
         gl.uniformMatrix4fv(uProjection, false, perspective);
+
+
+        var uAmbientConstant = gl.getUniformLocation(shaderProgram, "uAmbientConstant");
+        var uAmbientIntensity = gl.getUniformLocation(shaderProgram, "uAmbientIntensity");
+        gl.uniform3fv(uAmbientConstant, [1.0, 0.5, 1.0]);
+        gl.uniform1f(uAmbientIntensity, 0.4);
+
         drawing(objects[4].vertices, objects[4].indices, objects[4].type);
     }
 
@@ -131,6 +144,12 @@ const main = () =>{
         gl.uniformMatrix4fv(uModel,false, model);
         gl.uniformMatrix4fv(uView, false, view);
         gl.uniformMatrix4fv(uProjection, false, perspective);
+
+        var uAmbientConstant = gl.getUniformLocation(shaderProgram, "uAmbientConstant");
+        var uAmbientIntensity = gl.getUniformLocation(shaderProgram, "uAmbientIntensity");
+        gl.uniform3fv(uAmbientConstant, [1.0, 0.5, 1.0]);
+        gl.uniform1f(uAmbientIntensity, 0.4);
+        
         drawing(objects[0].vertices, objects[0].indices, objects[0].type);
     }
     
@@ -167,6 +186,13 @@ const main = () =>{
         gl.uniformMatrix4fv(uModel,false, model);
         gl.uniformMatrix4fv(uView, false, view);
         gl.uniformMatrix4fv(uProjection, false, perspective);
+
+        var uAmbientConstant = gl.getUniformLocation(shaderProgram, "uAmbientConstant");
+        var uAmbientIntensity = gl.getUniformLocation(shaderProgram, "uAmbientIntensity");
+        gl.uniform3fv(uAmbientConstant, [1.0, 0.5, 1.0]);
+        gl.uniform1f(uAmbientIntensity, 0.4);
+
+
         drawing(objects[2].vertices, objects[2].indices, objects[2].type);
     }
     const animateS = () =>{
